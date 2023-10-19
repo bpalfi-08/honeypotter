@@ -1,0 +1,5 @@
+xpack.security.authc:
+  anonymous:
+    username: anonymous
+    roles: superuser
+    authz_exception: false
