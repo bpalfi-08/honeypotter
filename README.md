@@ -37,6 +37,21 @@ sudo node mitm.js -n nginx-container -i $(docker inspect -f '{{.NetworkSettings.
 ```
 to start the MITM server on localhost port 3002.
 
+## Control container and ACES-MITM
+Same process as above. (this is untested but should work)
+```bash
+docker build -t control-image control/
+docker run --net honeypot-network --name control-container -dp 4000:80 control-image
+docker exec "control-container" service ssh start
+```
+This will start a control sever on port 4000 -- the port will be open but incoming traffic will not be handled.
+
+Assuming the prerequisites are already installed, we can run
+```bash
+sudo node mitm.js -n control-container -i $(docker inspect -f '{{.NetworkSettings.IPAddress}}' control-container) -p 3003 -a --auto-access-fixed 2 --container-mount-path-prefix /proc --container-mount-path-suffix root --debug
+```
+to start the MITM server on localhost port 3003.
+
 ## ElasticSearch
 The following commands will build and run the ElasticSearch database.
 ```bash
