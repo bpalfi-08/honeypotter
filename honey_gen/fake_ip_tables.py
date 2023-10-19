@@ -4,14 +4,14 @@ from ipaddress import IPv4Address
 
 def generate_fake_rules(num_rules, server_ip, save_folder="files"):
     fake = Faker()
-    with open(f'{save_folder}/fake_rules.txt', 'w') as file:
+    with open(f'{save_folder}/iptables_rules.txt', 'w') as file:
         for _ in range(num_rules):
             src_ip = IPv4Address(fake.ipv4())
             dst_ip = IPv4Address(fake.ipv4())
             src_port = random.randint(1, 65535)
             dst_port = random.randint(1, 65535)
             protocol = random.choice(['TCP', 'UDP', 'ICMP'])
-            action = random.choice(['ALLOW', 'DENY'])
+            action = random.choice(['ACCEPT', 'DROP', 'REJECT'])
             direction = random.choice(['IN', 'OUT'])
             
             if direction == 'IN':

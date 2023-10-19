@@ -48,7 +48,7 @@ num_users = 130
 save_folder = "files"
 
 # Open a CSV file in write mode
-with open(f"{save_folder}/fake_users.csv", "w") as file:
+with open(f"{save_folder}/personal_user_data.csv", "w") as file:
     # Write header
     file.write("FirstName,LastName,UserName,Email,Phone,State,Zipcode,UID\n")
     

@@ -47,3 +47,15 @@ TODO: Restrict anonymous access to read-only
 TODO: Pre-populate the database with the honey
 
 TODO: Figure out networking (iptables) rules for allowing other containers to access the database
+
+## Honey
+Code to generate fake honey files is in the honey_gen directory, and running the files (with python) creates a file in the honey_gen/files subdirectory. Automatically generated honey falls in two categories:
+1. User information files: personal information of users (personal_info_gen.py) and login information with usernames and passwords (fake_logins.py). 
+    * Personal information is a csv with full name, username, email, phone number, state, and zip code.
+    * Login information is a csv with username, email, and password (can be hashed/salted based on parameter).
+2. Connection-related information: network traffic (fake_ip_logs.py), IP table rules (fake_ip_tables.py), and labeled user login attempts (fake_connections.py). 
+    * Network traffic is a text file with timestamp, source IP, a database command, protocol, and status of various connections.
+    * IP table rules is a text file that includes source IP, destination IP, and protocol, an action (ACCEPT, DROP, or REJECT), and a direction.
+    * Labeled user login attempts is a csv with timestamp (rows ordered in time), source IP, username, inputted password, and SUCCESS/FAILURE.
+
+These fake honey files are either text files or csvs - they should be copied into the honey directory and renamed (potentially with different file extensions) on the honeypot server.

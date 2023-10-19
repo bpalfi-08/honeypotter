@@ -40,7 +40,7 @@ def generate_fake_db(num_entries, hash_passwords=False, get_emails_from_file=Non
 
 # Usage: 
 # To generate a fake database with plain text passwords
-generate_fake_db(100, get_emails_from_file="files/fake_users.csv")
+generate_fake_db(100, get_emails_from_file="files/user_logins.csv")
 
 # To generate a fake database with hashed and salted passwords
 # generate_fake_db(100, hash_passwords=True)
