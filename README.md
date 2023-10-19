@@ -1,10 +1,13 @@
 # honeypotter
 HACS200 Honeypot Project - Fall 2023
 
+## Set up Docker network
+Run `docker network create honeypot-network` to create a network to bridge all the containers together (I think this is a bit insecure but I really don't want to figure out the proper iptables rules right now).
+
 ## Running Apache and ACES-MITM
 First, we build the docker container; this can be done with `docker build -t mitm httpd/` We can run an instance of this container with
 ```bash
-docker run -dp 127.0.0.1:3000:80 --name mitm-container mitm
+docker run -dp 127.0.0.1:3000:80 --net honeypot-network --name mitm-container mitm
 ```
 which creates a container called `mitm-container` and forwards port 80 of the container to port 3000 on localhost. Next, run
 ```bash
@@ -24,7 +27,7 @@ It's worth noting that using the `/proc` file system is a bit of a hack and we p
 The process for nginx is similar to above. The following commands will build and run the nginx image.
 ```bash
 docker build -t nginx nginx/
-docker run --name nginx-container -dp 8080:80 nginx
+docker run --net honeypot-network --name nginx-container -dp 8080:80 nginx
 docker exec "nginx-container" service ssh start
 ```
 
@@ -38,9 +41,9 @@ to start the MITM server on localhost port 3002.
 The following commands will build and run the ElasticSearch database.
 ```bash
 docker build -t elastic elasticsearch/
-docker run -dp 127.0.0.1:9200:9200 --name elasticsearch -m 1GB elastic
+docker run -dp 127.0.0.1:9200:9200 --net honeypot-network --name esearch -m 1GB elastic
 ```
-TODO: Figure out how to get the SSL certificate onto the other containers
+Note: if the container name is changed from `esearch` then the configuration files for httpd and Apache must be updated as well
 
 TODO: Restrict anonymous access to read-only
 
