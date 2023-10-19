@@ -6,7 +6,7 @@ import bcrypt
 import random
 import pandas as pd
 
-def generate_fake_db(num_entries, hash_passwords=False, get_emails_from_file=None):
+def generate_fake_db(num_entries, hash_passwords=False, get_emails_from_file=None, save_folder="files"):
     """
     num_entries: number of entries to generate
     hash_passwords: if True, hash passwords with bcrypt
@@ -18,7 +18,7 @@ def generate_fake_db(num_entries, hash_passwords=False, get_emails_from_file=Non
     if get_emails_from_file is not None:
         user_db = pd.read_csv(get_emails_from_file)
 
-    with open('fake_logins.csv', mode='w', newline='') as file:
+    with open(f'{save_folder}/fake_logins.csv', mode='w', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
         
@@ -40,7 +40,7 @@ def generate_fake_db(num_entries, hash_passwords=False, get_emails_from_file=Non
 
 # Usage: 
 # To generate a fake database with plain text passwords
-generate_fake_db(100, get_emails_from_file="fake_users.csv")
+generate_fake_db(100, get_emails_from_file="files/fake_users.csv")
 
 # To generate a fake database with hashed and salted passwords
 # generate_fake_db(100, hash_passwords=True)

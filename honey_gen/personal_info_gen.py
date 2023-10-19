@@ -1,6 +1,5 @@
 import random
 import string
-import names
 
 # Define possible first and last names
 first_names = ["Adam", "Mohammed", "Oliver", "Noah", "Sophia", "Liam", "Ava", "Isabella", "Mia", "Evelyn", "Abigail", "Emily", "Harper", "Elizabeth", "Sofia", "Avery", "Ella", "Scarlett", "Grace", "Lily", "Aria", "Chloe", "Isabelle", "Anna", "Victoria", "Natalie", "Zoe", "Leah", "Hazel", "Violet", "Aurora", "Savannah", "Audrey", "Brooklyn", "Bella", "Claire", "Skylar", "Lucy", "Paisley", "Everly", "Addison", "Ruby", "Layla", "Emma", "Olivia", "Aiden", "Lucas", "Caleb", "Mason", "Logan", "Benjamin", "James", "Henry", "Alexander", "Sebastian", "Jack", "Elijah", "Daniel", "Matthew", "Joseph", "David", "Carter", "Owen", "Wyatt", "John", "Oscar", "Eli", "Luke", "Anthony", "Isaac", "Dylan", "Lincoln", "Jaxon", "Asher", "Christopher", "Josiah", "Andrew", "Thomas", "Joshua", "Ezra", "Hudson", "Charles", "Cameron", "Evan", "Maverick", "Bryson", "Jillian", "Carson", "Theodore", "Christian", "Austin", "Eli", "Jonathan", "Nolan", "Aaron", "Cameron", "Colton", "Adrian", "Alex", "Edward", "Nicholas", "Charlie", "Kai", "Jaxon", "Kaiden", "Gabriel"]
@@ -10,6 +9,8 @@ middle_names = ["James", "John", "Robert", "Michael", "William", "David", "Richa
 
 # Generated last names
 last_names = ["Smith", "Johnson", "Williams", "Brown", "Taylor", "Miller", "Wilson", "Moore", "Anderson", "Thomas", "Jackson", "White", "Harris", "Martin", "Thompson", "Garcia", "Martinez", "Robinson", "Clark", "Rodriguez", "Lewis", "Lee", "Walker", "Hall", "Allen", "Young", "Hernandez", "King", "Wright", "Lopez", "Hill", "Scott", "Green", "Adams", "Baker", "Gonzalez", "Nelson", "Carter", "Mitchell", "Perez", "Roberts", "Turner", "Phillips", "Campbell", "Parker", "Evans", "Edwards", "Collins", "Stewart", "Sanchez", "Morris", "Rogers", "Reed", "Cook", "Morgan", "Bell", "Murphy", "Bailey", "Rivera", "Cooper", "Richardson", "Cox", "Howard", "Ward", "Torres", "Peterson", "Gray", "Ramirez", "James", "Watson", "Brooks", "Kelly", "Sanders", "Price", "Bennett", "Wood", "Barnes", "Ross", "Henderson", "Coleman", "Jenkins", "Perry", "Powell", "Long", "Patterson", "Hughes", "Flores", "Washington", "Butler", "Simmons", "Foster", "Gonzales", "Bryant", "Alexander", "Russell", "Griffin", "Diaz", "Hayes"]
+
+states = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming']
 
 # Define email domains
 email_domains = ["terpmail.umd.edu", "umd.edu"]
@@ -44,17 +45,12 @@ possible_years = [str(i) for i in range(1990, 2005)]
 
 num_users = 130
 
-# Generate a random password
-def generate_password(length): # generate without comma or newline
-    characters = string.ascii_letters + string.digits + string.punctuation
-    characters = characters.replace(",", "")
-    password = ''.join(random.choice(characters) for i in range(length))
-    return password
+save_folder = "files"
 
 # Open a CSV file in write mode
-with open("fake_users.csv", "w") as file:
+with open(f"{save_folder}/fake_users.csv", "w") as file:
     # Write header
-    file.write("UserName,Email,Phone,Password\n")
+    file.write("FirstName,LastName,UserName,Email,Phone,State,Zipcode,UID\n")
     
     # Generate num_users user data entries
     for i in range(num_users):
@@ -63,9 +59,11 @@ with open("fake_users.csv", "w") as file:
         email_domain = random.choice(email_domains)
         # with probability 70% use area code from Maryland, else generate random area code
         if random.random() < 0.7:
+            state = "Maryland"
             area_code = random.choice(area_codes)
-        else:
+        else: # random United States state
             area_code = random.randint(100, 999)
+            state = random.choice(states)
         
         # Construct user data
         # with probability 80% use email format without year, else use email format with year
@@ -84,7 +82,9 @@ with open("fake_users.csv", "w") as file:
             phone = f"{random.randint(100, 999)}-{random.randint(100, 999)}-{random.randint(1000, 9999)}"
         else:
             phone = f"({area_code}) {random.randint(100, 999)}-{random.randint(1000, 9999)}"
-        password = generate_password(10)
         
+        zip_code = random.randint(10000, 99999)
+        
+        uid = random.randint(100000000, 999999999)
         # Write user data to file
-        file.write(f"{username},{email},{phone},{password}\n")
+        file.write(f"{first_name},{last_name},{username},{email},{phone},{state},{zip_code},{uid}\n")

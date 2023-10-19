@@ -1,13 +1,13 @@
 from faker import Faker
 import random
 
-def generate_log(entries):
+def generate_log(entries, save_folder="files"):
     fake = Faker()
     methods = ["GET", "POST", "PUT", "DELETE"]
     resources = ["/index.html", "/contact.html", "/about.html", "/form_submit", "/images/logo.png"]
     status_codes = [200, 301, 302, 400, 404, 500]
     
-    with open("fake_ip_log.txt", "w") as file:
+    with open(f"{save_folder}/ip_log.txt", "w") as file:
         for _ in range(entries):
             ip = fake.ipv4()
             timestamp = fake.date_time_this_year().strftime("[%d/%b/%Y:%H:%M:%S +0000]")
@@ -19,4 +19,4 @@ def generate_log(entries):
             file.write(log_entry)
 
 # Call the function with the number of entries you want to generate
-generate_log(100)
+generate_log(1000)
