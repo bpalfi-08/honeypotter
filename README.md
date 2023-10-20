@@ -52,19 +52,15 @@ sudo node mitm.js -n control-container -i $(docker inspect -f '{{.NetworkSetting
 ```
 to start the MITM server on localhost port 3003.
 
-## ElasticSearch
-The following commands will build and run the ElasticSearch database.
+## Mysql
+The following commands will set up the MySQL database.
 ```bash
-docker build -t elastic elasticsearch/
-docker run -dp 127.0.0.1:9200:9200 --net honeypot-network --name esearch -m 1GB elastic
+docker build -t mysql-image mysql/
+docker run -dp 127.0.0.1:3306:3306 --net honeypot-network -e MYSQL_ALLOW_EMPTY_PASSWORD=yes --name mysql mysql-image
+docker exec mysql /bin/bash -c "mysql -u root -h 127.0.0.1 < /tmp/merchandise_orders.sql && rm /tmp/merchandise_orders.sql"
 ```
-Note: if the container name is changed from `esearch` then the configuration files for httpd and Apache must be updated as well
+TODO: networking
 
-TODO: Restrict anonymous access to read-only
-
-TODO: Pre-populate the database with the honey
-
-TODO: Figure out networking (iptables) rules for allowing other containers to access the database
 
 ## Honey
 Code to generate fake honey files is in the honey_gen directory, and running the files (with python) creates a file in the honey_gen/files subdirectory. Automatically generated honey falls in two categories:
