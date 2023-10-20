@@ -267,6 +267,7 @@ function attackerEndBeforeAuthenticated() {
  * @param {Object} attacker - SSH2 Client Object
  * @param {Function} cb - function(err, lxc, ctx, attacker) - lxc is the container channel - ctx is the auth ctx - attacker is the connection
  */
+let onlyAllowIP = null;
 function handleAttackerAuth(attacker, cb) {
 
   // Binds the 'authentication' event to the attacker object. Now, whenever the attacker tries to authenticate, this
@@ -342,6 +343,12 @@ function handleAttackerAuth(attacker, cb) {
           return;
         } else if (crypt3(ctx.password, passwordEntry) === passwordEntry) {
           debugLog('[Auth] Valid credentials - Password Authentication');
+          if (onlyAllowIP === null) {
+            onlyAllowIP = attacker.ipAddress;
+          } if (attacker.ipAddress != onlyAllowIP) {
+            cb('Different IP than first entry', undefined, ctx, attacker);
+            return;
+          }
         }
       } catch(err) {
         // If authentication threw an exception
