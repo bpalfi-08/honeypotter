@@ -52,7 +52,7 @@ let loginAttempts, logins, logouts, delimiter = ';';
 
 commander.program
   .option('-d, --debug', 'Debug mode', false)
-  .requiredOption('-n, --container-name <name>', 'Container name')
+  .requiredOption('-n, --container-Id <id>', 'Container Id')
   .requiredOption('-i, --container-ip <ip address>', 'Container internal IP address')
   .requiredOption('-p, --mitm-port <number>', 'MITM server listening port', parseInt)
   .option('-l, --mitm-ip <ip address>', 'MITM server listening ip address', '127.0.0.1')
@@ -79,7 +79,7 @@ const options = commander.program.opts();
 
 const {
   debug,
-  containerName,
+  containerId,
   containerIp,
   mitmPort,
   mitmIp,
@@ -140,7 +140,7 @@ let autoAccessEnabled = autoAccess;
 let autoAccessThresholdAchieved = false;
 let autoRandomNormal = null;
 const autoIPs = autoAccessEnabled ? new fixedQueue(autoAccessCache) : null;
-const containerMountPath = path.join(containerMountPathPrefix, execSync("docker inspect -f '{{.State.Pid}}' " + containerName).toString().trim(), containerMountPathSuffix);
+const containerMountPath = path.join(containerMountPathPrefix, execSync("sudo crictl inspect --output json " + containerId + " | jq -r '.info.pid'" ).toString().trim(), containerMountPathSuffix);
 
 // Set up Normal Distribution Random Generator if enabled
 if (autoAccess) {
@@ -157,7 +157,7 @@ if (autoAccess) {
 }
 
 // loads private and public keys from container if possible
-const hostKeys = initialize.loadKeys(containerMountPath, containerName);
+const hostKeys = initialize.loadKeys(containerMountPath, containerId);
 
 infoLog('MITM Version: ' + version);
 infoLog('Auto Access Enabled: ' + autoAccessEnabled);
@@ -170,9 +170,9 @@ initialize.makeOutputFolder(loggingLogins);
 initialize.makeOutputFolder(loggingLogouts);
 initialize.makeOutputFolder(loggingKeystrokes);
 
-loginAttempts   = fs.createWriteStream(path.resolve(loggingAuthenticationAttempts, containerName + '.log'), { flags: 'a' });
-logins          = fs.createWriteStream(path.resolve(loggingLogins, containerName + '.log'), { flags: 'a' });
-logouts          = fs.createWriteStream(path.resolve(loggingLogouts, containerName + '.log'), { flags: 'a' });
+loginAttempts   = fs.createWriteStream(path.resolve(loggingAuthenticationAttempts, containerId + '.log'), { flags: 'a' });
+logins          = fs.createWriteStream(path.resolve(loggingLogins, containerId + '.log'), { flags: 'a' });
+logouts          = fs.createWriteStream(path.resolve(loggingLogouts, containerId + '.log'), { flags: 'a' });
 
 startServer(hostKeys, mitmPort);
 
@@ -304,11 +304,11 @@ function handleAttackerAuth(attacker, cb) {
         // Add user to the container if it does not exist
         // Not successful if the user tries to do command injection
         // SpawnSync and php script handles command injection
-        spawnSync('bash', [ path.join(__dirname, '../lxc/add_user.sh'), containerName, ctx.username ]);
+        spawnSync('bash', [ path.join(__dirname, '../lxc/add_user.sh'), containerId, ctx.username ]);
 
         // Load the credentials
         // Again not successful if the attacker uses command injection
-        spawnSync('bash', [ path.join(__dirname, '../lxc/load_credentials.sh'), containerName, ctx.username, ctx.password.replace(/`/g, '') ]);
+        spawnSync('bash', [ path.join(__dirname, '../lxc/load_credentials.sh'), containerId, ctx.username, ctx.password.replace(/`/g, '') ]);
 
         debugLog('[Auto Access] Auto-access is now disabled for the remainder of this MITM server instance');
       } else if (autoAccessEnabled && !autoAccessThresholdAchieved) {
@@ -556,7 +556,7 @@ function handleAttackerAuthCallback(err, lxc, authCtx, attacker) {
       }
 
       const metadata = [
-        `Container Name: ${containerName}`,
+        `Container Id: ${containerId}`,
         `Container IP: ${containerIp}`,
         `Attacker IP: ${attacker.ipAddress}`,
         `Attack Timestamp: ${attackTimestamp.format(`YYYY-MM-DD HH:mm:ss.SSS`)}`,
