@@ -1,10 +1,13 @@
 # honeypotter
 HACS200 Honeypot Project - Fall 2023
 
+## Set up Docker network
+Run `docker network create honeypot-network` to create a network to bridge all the containers together (I think this is a bit insecure but I really don't want to figure out the proper iptables rules right now).
+
 ## Running Apache and ACES-MITM
 First, we build the docker container; this can be done with `docker build -t mitm httpd/` We can run an instance of this container with
 ```bash
-docker run -dp 127.0.0.1:3000:80 --name mitm-container mitm
+docker run -dp 127.0.0.1:3000:80 --net honeypot-network --name mitm-container mitm
 ```
 which creates a container called `mitm-container` and forwards port 80 of the container to port 3000 on localhost. Next, run
 ```bash
@@ -24,7 +27,7 @@ It's worth noting that using the `/proc` file system is a bit of a hack and we p
 The process for nginx is similar to above. The following commands will build and run the nginx image.
 ```bash
 docker build -t nginx nginx/
-docker run --name nginx-container -dp 8080:80 nginx
+docker run --net honeypot-network --name nginx-container -dp 8080:80 nginx
 docker exec "nginx-container" service ssh start
 ```
 
@@ -34,19 +37,30 @@ sudo node mitm.js -n nginx-container -i $(docker inspect -f '{{.NetworkSettings.
 ```
 to start the MITM server on localhost port 3002.
 
-## ElasticSearch
-The following commands will build and run the ElasticSearch database.
+## Control container and ACES-MITM
+Same process as above. (this is untested but should work)
 ```bash
-docker build -t elastic elasticsearch/
-docker run -dp 127.0.0.1:9200:9200 --name elasticsearch -m 1GB elastic
+docker build -t control-image control/
+docker run --net honeypot-network --name control-container -dp 4000:80 control-image
+docker exec "control-container" service ssh start
 ```
-TODO: Figure out how to get the SSL certificate onto the other containers
+This will start a control sever on port 4000 -- the port will be open but incoming traffic will not be handled.
 
-TODO: Restrict anonymous access to read-only
+Assuming the prerequisites are already installed, we can run
+```bash
+sudo node mitm.js -n control-container -i $(docker inspect -f '{{.NetworkSettings.IPAddress}}' control-container) -p 3003 -a --auto-access-fixed 2 --container-mount-path-prefix /proc --container-mount-path-suffix root --debug
+```
+to start the MITM server on localhost port 3003.
 
-TODO: Pre-populate the database with the honey
+## Mysql
+The following commands will set up the MySQL database.
+```bash
+docker build -t mysql-image mysql/
+docker run -dp 127.0.0.1:3306:3306 --net honeypot-network -e MYSQL_ALLOW_EMPTY_PASSWORD=yes --name mysql mysql-image
+docker exec mysql /bin/bash -c "mysql -u root -h 127.0.0.1 < /tmp/merchandise_orders.sql && rm /tmp/merchandise_orders.sql"
+```
+TODO: networking
 
-TODO: Figure out networking (iptables) rules for allowing other containers to access the database
 
 ## Honey
 Code to generate fake honey files is in the honey_gen directory, and running the files (with python) creates a file in the honey_gen/files subdirectory. Automatically generated honey falls in two categories:
